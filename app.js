@@ -1,5 +1,6 @@
 const svg = document.getElementById("forceViz");
 const SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxT_Oa9xMQNjA8oj4_NjIugT3wQrA4bSvfDGLSnoaOsQwwFOn-4LS_RYEeRRNpfJ1cu/exec";
+let quizSubmitLocked = false;
 const QUIZ_QUESTIONS = [
   {
     prompt: "Une force appliquée sur un segment corporel peut être représentée par un vecteur. Quelles sont les caractéristiques nécessaires pour décrire correctement cette force ?",
@@ -375,8 +376,12 @@ function renderQuizCorrection(results) {
       return;
     }
 
-    node.classList.remove("correct", "partial", "incorrect");
-    node.classList.add(result.score === 2 ? "correct" : result.score === 1 ? "partial" : "incorrect");
+    node.classList.remove("correct", "partial", "incorrect", "unanswered");
+    if (result.selectedValues.length === 0) {
+      node.classList.add("unanswered");
+    } else {
+      node.classList.add(result.score === 2 ? "correct" : result.score === 1 ? "partial" : "incorrect");
+    }
 
     const feedback = node.querySelector(".question-feedback");
     feedback.hidden = false;
@@ -387,6 +392,8 @@ function renderQuizCorrection(results) {
 function submitScoreToSheet(payload) {
   if (!SHEETS_WEB_APP_URL || !outputs.sheetSubmitForm) {
     outputs.quizStatus.textContent = "Note calculée localement. Ajoute l'URL du Web App Google Apps Script dans app.js pour l'envoyer vers Google Sheets.";
+    outputs.quizStatus.classList.remove("is-success");
+    outputs.quizStatus.classList.add("is-error");
     return;
   }
 
@@ -398,16 +405,35 @@ function submitScoreToSheet(payload) {
   outputs.sheetSubmittedAt.value = payload.submittedAt;
   outputs.sheetAnswersJson.value = JSON.stringify(payload.answers);
   outputs.sheetSubmitForm.submit();
-  outputs.quizStatus.textContent = "Note envoyée vers Google Sheets.";
+  outputs.quizStatus.textContent = "Note calculée et envoyée vers Google Sheets.";
+  outputs.quizStatus.classList.remove("is-error");
+  outputs.quizStatus.classList.add("is-success");
 }
 
 function handleQuizSubmission() {
+  if (quizSubmitLocked) {
+    outputs.quizStatus.textContent = "La note a déjà été calculée pour cette session. Recharge la page si vous devez recommencer.";
+    outputs.quizStatus.classList.remove("is-success");
+    outputs.quizStatus.classList.add("is-error");
+    return;
+  }
+
   const studentName = outputs.studentName.value.trim();
   const studentGroup = outputs.studentGroup.value.trim();
 
   if (!studentName) {
     outputs.quizStatus.textContent = "Merci de renseigner le nom et prénom avant de corriger le QCM.";
+    outputs.quizStatus.classList.remove("is-success");
+    outputs.quizStatus.classList.add("is-error");
     outputs.studentName.focus();
+    return;
+  }
+
+  if (!studentGroup) {
+    outputs.quizStatus.textContent = "Merci de renseigner le groupe ou la promotion avant de corriger le QCM.";
+    outputs.quizStatus.classList.remove("is-success");
+    outputs.quizStatus.classList.add("is-error");
+    outputs.studentGroup.focus();
     return;
   }
 
@@ -416,6 +442,13 @@ function handleQuizSubmission() {
   const total10 = total20 / 2;
   const answeredCount = results.filter((result) => result.selectedValues.length > 0).length;
 
+  if (answeredCount !== QUIZ_QUESTIONS.length) {
+    outputs.quizStatus.textContent = "Merci de répondre à toutes les questions avant de soumettre la note.";
+    outputs.quizStatus.classList.remove("is-success");
+    outputs.quizStatus.classList.add("is-error");
+    return;
+  }
+
   renderQuizCorrection(results);
 
   if (outputs.quizResult) {
@@ -423,8 +456,13 @@ function handleQuizSubmission() {
     outputs.quizResult.innerHTML = `
       <strong>Note : ${total20}/20 (${round(total10, 1)}/10)</strong>
       <p>${answeredCount} question(s) renseignée(s) sur ${QUIZ_QUESTIONS.length}. La correction détaillée apparaît sous chaque question.</p>
+      <p>Étudiant : ${studentName}${studentGroup ? ` • ${studentGroup}` : ""}</p>
     `;
   }
+
+  quizSubmitLocked = true;
+  outputs.gradeQuizButton.disabled = true;
+  outputs.gradeQuizButton.textContent = "Note enregistrée";
 
   submitScoreToSheet({
     studentName,

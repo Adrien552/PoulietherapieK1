@@ -187,6 +187,14 @@
         </div>
 
         <div class="quiz-card">
+          <div class="quiz-banner">
+            <strong>Consigne étudiant</strong>
+            <p>
+              Renseignez votre identité, répondez aux 10 questions, puis cliquez une seule fois sur
+              <em>Corriger et enregistrer la note</em>. Attendez l'affichage du résultat avant de quitter la page.
+            </p>
+          </div>
+
           <div class="quiz-meta">
             <div>
               <span>Durée</span>
@@ -225,17 +233,20 @@
               <p>Réponse avec au moins une réponse fausse cochée : 0 point.</p>
               <p>Absence de réponse : 0 point.</p>
             </div>
-
-            <div class="quiz-action">
-              <button id="gradeQuizButton" class="quiz-button" type="button">Corriger et enregistrer la note</button>
-              <p id="quizStatus" class="quiz-status">
-                L’application calcule la note localement puis peut l’envoyer vers Google Sheets.
-              </p>
-            </div>
           </div>
 
           <div id="quizResult" class="quiz-result" hidden></div>
           <div id="quizContainer" class="quiz-questions"></div>
+
+          <div class="quiz-action quiz-action-bottom">
+            <button id="gradeQuizButton" class="quiz-button" type="button">Corriger et enregistrer la note</button>
+            <p id="quizStatus" class="quiz-status">
+              L’application calcule la note localement puis peut l’envoyer vers Google Sheets.
+            </p>
+            <p class="quiz-status quiz-status-soft">
+              Conseil : vérifiez que votre nom et votre groupe sont correctement saisis avant validation.
+            </p>
+          </div>
         </div>
 
         <form id="sheetSubmitForm" class="sheet-submit-form" method="post" target="sheetSubmitFrame" hidden>
