@@ -179,6 +179,75 @@
           </article>
         </div>
       </section>
+
+      <section class="panel quiz-panel">
+        <div class="section-title">
+          <p class="eyebrow">Évaluation</p>
+          <h2>QCM noté UE6 Mécanothérapie</h2>
+        </div>
+
+        <div class="quiz-card">
+          <div class="quiz-meta">
+            <div>
+              <span>Durée</span>
+              <strong>20 minutes</strong>
+            </div>
+            <div>
+              <span>Barème</span>
+              <strong>10 questions, 20 points</strong>
+            </div>
+            <div>
+              <span>Validation</span>
+              <strong>QCM local + Google Sheets</strong>
+            </div>
+          </div>
+
+          <p class="quiz-intro">
+            Pour chaque question, une ou plusieurs réponses peuvent être exactes. Une question est validée uniquement si toutes les réponses exactes sont cochées et si aucune réponse fausse n’est cochée.
+          </p>
+
+          <div class="quiz-student">
+            <div class="student-field">
+              <label for="studentName">Nom et prénom</label>
+              <input id="studentName" type="text" placeholder="Ex. Camille Martin">
+            </div>
+            <div class="student-field">
+              <label for="studentGroup">Groupe / promotion</label>
+              <input id="studentGroup" type="text" placeholder="Ex. K1 2026-2027">
+            </div>
+          </div>
+
+          <div class="quiz-layout">
+            <div class="quiz-summary">
+              <h3>Notation</h3>
+              <p>Réponse entièrement juste : 2 points.</p>
+              <p>Réponse partiellement juste sans réponse fausse : 1 point.</p>
+              <p>Réponse avec au moins une réponse fausse cochée : 0 point.</p>
+              <p>Absence de réponse : 0 point.</p>
+            </div>
+
+            <div class="quiz-action">
+              <button id="gradeQuizButton" class="quiz-button" type="button">Corriger et enregistrer la note</button>
+              <p id="quizStatus" class="quiz-status">
+                L’application calcule la note localement puis peut l’envoyer vers Google Sheets.
+              </p>
+            </div>
+          </div>
+
+          <div id="quizResult" class="quiz-result" hidden></div>
+          <div id="quizContainer" class="quiz-questions"></div>
+        </div>
+
+        <form id="sheetSubmitForm" class="sheet-submit-form" method="post" target="sheetSubmitFrame" hidden>
+          <input type="hidden" name="student_name" id="sheetStudentName">
+          <input type="hidden" name="student_group" id="sheetStudentGroup">
+          <input type="hidden" name="score_20" id="sheetScore20">
+          <input type="hidden" name="score_10" id="sheetScore10">
+          <input type="hidden" name="submitted_at" id="sheetSubmittedAt">
+          <input type="hidden" name="answers_json" id="sheetAnswersJson">
+        </form>
+        <iframe name="sheetSubmitFrame" hidden></iframe>
+      </section>
     </main>
 
     <footer class="page-footer">
