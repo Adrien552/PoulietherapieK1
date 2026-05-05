@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>K1 Forces & Poulies</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">Biomécanique appliquée pour étudiants K1</p>
+        <h1>Visualiser les forces, les angles et les bras de levier en kinésithérapie</h1>
+        <p class="lead">
+          Cette application aide à comprendre comment l’orientation d’une force modifie sa composante utile,
+          le couple produit et la difficulté ressentie pendant un exercice de pouliethérapie ou une résistance manuelle.
+        </p>
+      </div>
+    </header>
+
+    <main class="main-grid">
+      <section class="panel controls-panel">
+        <div class="section-title">
+          <p class="eyebrow">Réglages</p>
+          <h2>Paramètres de la situation</h2>
+        </div>
+
+        <div class="control-group">
+          <label for="modeSelect">Situation clinique</label>
+          <select id="modeSelect">
+            <option value="pulley">Pouliethérapie</option>
+            <option value="manual">Main du kiné / résistance manuelle</option>
+          </select>
+        </div>
+
+        <div class="control-group">
+          <label for="forceRange">Intensité de la force</label>
+          <input id="forceRange" type="range" min="10" max="120" value="60" step="1">
+          <div class="control-meta">
+            <span>Force appliquée</span>
+            <strong><span id="forceValue">60</span> N</strong>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label for="angleRange">Angle entre la force et le segment</label>
+          <input id="angleRange" type="range" min="0" max="360" value="90" step="1">
+          <div class="control-meta">
+            <span>Angle de travail</span>
+            <strong><span id="angleValue">90</span>°</strong>
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label for="leverRange">Application / articulation</label>
+          <input id="leverRange" type="range" min="0.05" max="0.60" value="0.30" step="0.01">
+          <div class="control-meta">
+            <span>Bras de levier</span>
+            <strong><span id="leverValue">0.30</span> m</strong>
+          </div>
+        </div>
+
+        <div class="control-group mode-only" data-mode="manual">
+          <label for="manualDirectionSelect">Sens de la force du kiné</label>
+          <select id="manualDirectionSelect">
+            <option value="push">Pousser contre résistance</option>
+            <option value="pull">Décoapter / tirer</option>
+          </select>
+          <p class="helper-text">
+            Le kinésithérapeute peut pousser vers le segment ou tirer pour décoapter. Le sens du vecteur change alors, ainsi que la composante parallèle.
+          </p>
+        </div>
+
+        <div class="control-group mode-only" data-mode="pulley">
+          <label for="suspensionRange">Position de la poulie sur la cage</label>
+          <input id="suspensionRange" type="range" min="0" max="100" value="42" step="1">
+          <div class="control-meta">
+            <span>Zone actuelle</span>
+            <strong id="suspensionValue">Traverse haute</strong>
+          </div>
+          <p class="helper-text">
+            La poulie se déplace uniquement le long de la cage. Le curseur modifie la ligne de traction exercée sur le segment.
+          </p>
+        </div>
+
+        <div class="formula-card">
+          <h3>Lecture rapide</h3>
+          <p><strong>Cr, composante rotatoire :</strong> F × sin(θ)</p>
+          <p><strong>Cl, composante longitudinale :</strong> F × cos(θ)</p>
+          <p><strong>Couple articulaire :</strong> F × bras de levier × sin(θ)</p>
+        </div>
+      </section>
+
+      <section class="panel viz-panel">
+        <div class="section-title">
+          <p class="eyebrow">Visualisation</p>
+          <h2>Décomposition des forces</h2>
+        </div>
+
+        <div class="canvas-wrap">
+          <svg id="forceViz" viewBox="0 0 720 420" role="img" aria-label="Schéma interactif des forces"></svg>
+        </div>
+
+        <div class="metrics-grid">
+          <article class="metric-card highlight">
+            <span>Force totale</span>
+            <strong id="metricForce">60 N</strong>
+            <p>Valeur appliquée par le câble ou par la main du thérapeute.</p>
+          </article>
+          <article class="metric-card">
+            <span>Cr, composante rotatoire</span>
+            <strong id="metricPerp">60 N</strong>
+            <p>C’est elle qui crée la rotation la plus efficace autour de l’articulation.</p>
+          </article>
+          <article class="metric-card">
+            <span>Cl, composante longitudinale</span>
+            <strong id="metricParallel">0 N</strong>
+            <p>Elle rapproche ou éloigne surtout les surfaces articulaires selon le sens.</p>
+          </article>
+          <article class="metric-card">
+            <span>Couple estimé</span>
+            <strong id="metricTorque">18.0 N·m</strong>
+            <p>Le couple augmente si la force est forte, l’angle favorable et le bras de levier long.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel insights-panel">
+        <div class="section-title">
+          <p class="eyebrow">Interprétation</p>
+          <h2>Ce que voit l’étudiant</h2>
+        </div>
+
+        <div class="insight-stack">
+          <article class="insight-card">
+            <h3>1. Décomposition de la force</h3>
+            <p id="insightDecomposition"></p>
+          </article>
+          <article class="insight-card">
+            <h3>2. Effet du bras de levier</h3>
+            <p id="insightLever"></p>
+          </article>
+          <article class="insight-card">
+            <h3>3. Application clinique</h3>
+            <p id="insightClinical"></p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel scenarios-panel">
+        <div class="section-title">
+          <p class="eyebrow">Repères pédagogiques</p>
+          <h2>Situations fréquentes en pratique</h2>
+        </div>
+
+        <div class="scenario-grid">
+          <article class="scenario-card">
+            <h3>Pouliethérapie</h3>
+            <p>
+              Quand le câble devient plus perpendiculaire au membre, la composante rotatoire augmente.
+              Le point de suspension sur la cage change lui aussi la ligne de traction et donc la difficulté perçue.
+            </p>
+          </article>
+          <article class="scenario-card">
+            <h3>Placement des mains</h3>
+            <p>
+              Plus la main du kiné s’éloigne de l’articulation, plus le bras de levier augmente et plus la résistance ressentie est importante.
+            </p>
+          </article>
+          <article class="scenario-card">
+            <h3>Angle avant-bras / membre</h3>
+            <p>
+              L’orientation de l’avant-bras du thérapeute modifie la direction de la force. Selon qu’il pousse ou qu’il tire pour décoapter, le sens du vecteur et la composante parallèle changent.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="page-footer">
+      <p>Conception Adrien Aquilina IUK Fontainebleau</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
