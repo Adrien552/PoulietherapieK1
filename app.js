@@ -1,4 +1,117 @@
 const svg = document.getElementById("forceViz");
+const SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxT_Oa9xMQNjA8oj4_NjIugT3wQrA4bSvfDGLSnoaOsQwwFOn-4LS_RYEeRRNpfJ1cu/exec";
+const QUIZ_QUESTIONS = [
+  {
+    prompt: "Une force appliquée sur un segment corporel peut être représentée par un vecteur. Quelles sont les caractéristiques nécessaires pour décrire correctement cette force ?",
+    correct: ["A", "B", "D", "E"],
+    options: {
+      A: "Son point d’application",
+      B: "Sa direction",
+      C: "Sa couleur",
+      D: "Son sens",
+      E: "Son intensité",
+    },
+  },
+  {
+    prompt: "En mécanothérapie, le filin exerce une force au niveau du point d’attache. Cette force dépend principalement :",
+    correct: ["A", "B", "D", "E"],
+    options: {
+      A: "De la direction du filin",
+      B: "De l’angle entre le filin et le segment",
+      C: "De la couleur de l’élingue",
+      D: "De la distance entre le point d’attache et le centre articulaire",
+      E: "De la charge placée à l’extrémité du filin",
+    },
+  },
+  {
+    prompt: "Dans la décomposition d’une force appliquée sur un segment, la composante rotatoire Cr :",
+    correct: ["A", "B", "D"],
+    options: {
+      A: "Participe au mouvement articulaire",
+      B: "Est maximale lorsque l’angle mécanique est favorable à la rotation",
+      C: "Produit uniquement un effet de compression",
+      D: "Est liée à l’effet de rotation autour de l’articulation",
+      E: "N’a aucun intérêt clinique",
+    },
+  },
+  {
+    prompt: "Dans un montage, une tension T de 50 N est appliquée avec un angle de 30° par rapport à l’axe longitudinal du segment. On donne cos 30° = 0,87 et sin 30° = 0,50. Si Cl = T × cos θ et Cr = T × sin θ, quelles propositions sont exactes ?",
+    correct: ["A", "B", "D", "E"],
+    options: {
+      A: "Cl vaut environ 43,5 N",
+      B: "Cr vaut environ 25 N",
+      C: "Cr vaut environ 43,5 N",
+      D: "Cl correspond à la composante longitudinale",
+      E: "Cr correspond à la composante rotatoire",
+    },
+  },
+  {
+    prompt: "Le moment d’une force dépend :",
+    correct: ["A", "B", "C", "E"],
+    options: {
+      A: "De l’intensité de la force",
+      B: "De la distance entre la ligne d’action de la force et le centre de rotation",
+      C: "Du bras de levier",
+      D: "De la longueur du filin uniquement",
+      E: "Du point d’application de la force",
+    },
+  },
+  {
+    prompt: "Pour diminuer l’effort demandé à un patient faible ou douloureux lors d’un exercice contre résistance, on peut :",
+    correct: ["A", "B", "D", "E"],
+    options: {
+      A: "Rapprocher le point d’attache du centre articulaire",
+      B: "Diminuer la charge",
+      C: "Augmenter le bras de levier",
+      D: "Modifier l’orientation du filin",
+      E: "Utiliser un montage facilitant plutôt que résistif",
+    },
+  },
+  {
+    prompt: "Une suspension verticale simple permet principalement :",
+    correct: ["A", "B", "D"],
+    options: {
+      A: "De diminuer l’effet de la pesanteur sur le segment",
+      B: "De faciliter le mouvement dans le plan horizontal",
+      C: "De remplacer systématiquement un travail contre résistance",
+      D: "De soulager le poids du segment",
+      E: "De rendre tout mouvement articulaire actif impossible",
+    },
+  },
+  {
+    prompt: "Un circuit mouflé en pouliethérapie :",
+    correct: ["A", "B", "C", "E"],
+    options: {
+      A: "Utilise une poulie mobile",
+      B: "Peut diminuer l’effort nécessaire pour déplacer une charge",
+      C: "Peut diviser la tension nécessaire dans certains montages",
+      D: "Augmente toujours par deux la difficulté pour le patient",
+      E: "Modifie la relation entre charge et force exercée sur le filin",
+    },
+  },
+  {
+    prompt: "Une traction de décompression doit rechercher principalement :",
+    correct: ["A", "B", "C", "E"],
+    options: {
+      A: "Une composante longitudinale suffisante",
+      B: "Une direction de force cohérente avec l’axe du segment ou de l’articulation ciblée",
+      C: "Un réglage contrôlé de l’intensité",
+      D: "Une augmentation maximale de la composante rotatoire",
+      E: "Une installation confortable et sécurisée",
+    },
+  },
+  {
+    prompt: "Avant de faire réaliser un exercice de mécanothérapie, le kinésithérapeute doit vérifier :",
+    correct: ["A", "B", "C", "D"],
+    options: {
+      A: "La douleur et la tolérance du patient",
+      B: "La solidité des fixations",
+      C: "L’orientation du filin",
+      D: "L’amplitude articulaire autorisée",
+      E: "La couleur du poids utilisé",
+    },
+  },
+];
 
 const controls = {
   force: document.getElementById("forceRange"),
@@ -21,6 +134,19 @@ const outputs = {
   insightLever: document.getElementById("insightLever"),
   insightClinical: document.getElementById("insightClinical"),
   suspensionValue: document.getElementById("suspensionValue"),
+  studentName: document.getElementById("studentName"),
+  studentGroup: document.getElementById("studentGroup"),
+  gradeQuizButton: document.getElementById("gradeQuizButton"),
+  quizContainer: document.getElementById("quizContainer"),
+  quizResult: document.getElementById("quizResult"),
+  quizStatus: document.getElementById("quizStatus"),
+  sheetSubmitForm: document.getElementById("sheetSubmitForm"),
+  sheetStudentName: document.getElementById("sheetStudentName"),
+  sheetStudentGroup: document.getElementById("sheetStudentGroup"),
+  sheetScore20: document.getElementById("sheetScore20"),
+  sheetScore10: document.getElementById("sheetScore10"),
+  sheetSubmittedAt: document.getElementById("sheetSubmittedAt"),
+  sheetAnswersJson: document.getElementById("sheetAnswersJson"),
 };
 
 const modeSections = document.querySelectorAll(".mode-only");
@@ -184,6 +310,132 @@ function renderText(state) {
 
 }
 
+function renderQuiz() {
+  if (!outputs.quizContainer) {
+    return;
+  }
+
+  outputs.quizContainer.innerHTML = QUIZ_QUESTIONS.map((question, index) => `
+    <article class="quiz-question" data-question-index="${index}">
+      <div class="question-header">
+        <div class="question-title">Question ${index + 1}</div>
+        <div class="question-points">2 points</div>
+      </div>
+      <p>${question.prompt}</p>
+      <div class="question-options">
+        ${Object.entries(question.options).map(([key, label]) => `
+          <label class="question-option">
+            <input type="checkbox" name="q${index}" value="${key}">
+            <span><strong>${key}.</strong> ${label}</span>
+          </label>
+        `).join("")}
+      </div>
+      <div class="question-feedback" hidden></div>
+    </article>
+  `).join("");
+}
+
+function evaluateQuestion(question, selectedValues) {
+  const correctSet = new Set(question.correct);
+  const selectedSet = new Set(selectedValues);
+  const hasFalse = selectedValues.some((value) => !correctSet.has(value));
+  const fullyCorrect = question.correct.length === selectedValues.length && question.correct.every((value) => selectedSet.has(value));
+  const hasAtLeastOneCorrect = selectedValues.some((value) => correctSet.has(value));
+  const partial = !hasFalse && !fullyCorrect && hasAtLeastOneCorrect;
+
+  if (fullyCorrect) {
+    return 2;
+  }
+
+  if (partial) {
+    return 1;
+  }
+
+  return 0;
+}
+
+function collectQuizResults() {
+  return QUIZ_QUESTIONS.map((question, index) => {
+    const selectedValues = [...document.querySelectorAll(`input[name="q${index}"]:checked`)].map((input) => input.value);
+    const score = evaluateQuestion(question, selectedValues);
+    return {
+      index,
+      selectedValues,
+      score,
+      correctValues: question.correct,
+    };
+  });
+}
+
+function renderQuizCorrection(results) {
+  const questionNodes = document.querySelectorAll(".quiz-question");
+  results.forEach((result) => {
+    const node = questionNodes[result.index];
+    if (!node) {
+      return;
+    }
+
+    node.classList.remove("correct", "partial", "incorrect");
+    node.classList.add(result.score === 2 ? "correct" : result.score === 1 ? "partial" : "incorrect");
+
+    const feedback = node.querySelector(".question-feedback");
+    feedback.hidden = false;
+    feedback.textContent = `Réponses exactes : ${result.correctValues.join(", ")} • Votre score : ${result.score}/2`;
+  });
+}
+
+function submitScoreToSheet(payload) {
+  if (!SHEETS_WEB_APP_URL || !outputs.sheetSubmitForm) {
+    outputs.quizStatus.textContent = "Note calculée localement. Ajoute l'URL du Web App Google Apps Script dans app.js pour l'envoyer vers Google Sheets.";
+    return;
+  }
+
+  outputs.sheetSubmitForm.action = SHEETS_WEB_APP_URL;
+  outputs.sheetStudentName.value = payload.studentName;
+  outputs.sheetStudentGroup.value = payload.studentGroup;
+  outputs.sheetScore20.value = payload.score20;
+  outputs.sheetScore10.value = payload.score10;
+  outputs.sheetSubmittedAt.value = payload.submittedAt;
+  outputs.sheetAnswersJson.value = JSON.stringify(payload.answers);
+  outputs.sheetSubmitForm.submit();
+  outputs.quizStatus.textContent = "Note envoyée vers Google Sheets.";
+}
+
+function handleQuizSubmission() {
+  const studentName = outputs.studentName.value.trim();
+  const studentGroup = outputs.studentGroup.value.trim();
+
+  if (!studentName) {
+    outputs.quizStatus.textContent = "Merci de renseigner le nom et prénom avant de corriger le QCM.";
+    outputs.studentName.focus();
+    return;
+  }
+
+  const results = collectQuizResults();
+  const total20 = results.reduce((sum, result) => sum + result.score, 0);
+  const total10 = total20 / 2;
+  const answeredCount = results.filter((result) => result.selectedValues.length > 0).length;
+
+  renderQuizCorrection(results);
+
+  if (outputs.quizResult) {
+    outputs.quizResult.hidden = false;
+    outputs.quizResult.innerHTML = `
+      <strong>Note : ${total20}/20 (${round(total10, 1)}/10)</strong>
+      <p>${answeredCount} question(s) renseignée(s) sur ${QUIZ_QUESTIONS.length}. La correction détaillée apparaît sous chaque question.</p>
+    `;
+  }
+
+  submitScoreToSheet({
+    studentName,
+    studentGroup,
+    score20: total20,
+    score10: round(total10, 1),
+    submittedAt: new Date().toISOString(),
+    answers: results,
+  });
+}
+
 function renderSvg(state) {
   const { force, angle, lever, mode, manualDirection, suspension, appliedAngle, handX, handY, perpendicular, parallel } = state;
   const origin = { x: 180, y: 250 };
@@ -316,4 +568,8 @@ Object.values(controls).forEach((control) => {
   control.addEventListener("change", render);
 });
 
+renderQuiz();
+if (outputs.gradeQuizButton) {
+  outputs.gradeQuizButton.addEventListener("click", handleQuizSubmission);
+}
 render();
