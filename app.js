@@ -1,6 +1,7 @@
 const svg = document.getElementById("forceViz");
 const SHEETS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxT_Oa9xMQNjA8oj4_NjIugT3wQrA4bSvfDGLSnoaOsQwwFOn-4LS_RYEeRRNpfJ1cu/exec";
 let quizSubmitLocked = false;
+let quizRuntimeQuestions = [];
 const QUIZ_QUESTIONS = [
   {
     prompt: "Une force appliquée sur un segment corporel peut être représentée par un vecteur. Quelles sont les caractéristiques nécessaires pour décrire correctement cette force ?",
@@ -162,6 +163,26 @@ const cageBounds = {
   bottom: 315,
 };
 
+function shuffleArray(items) {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function buildQuizRuntimeQuestions() {
+  quizRuntimeQuestions = shuffleArray(
+    QUIZ_QUESTIONS.map((question) => ({
+      ...question,
+      shuffledOptions: shuffleArray(
+        Object.entries(question.options).map(([key, label]) => ({ key, label }))
+      ),
+    }))
+  );
+}
+
 function anchorFromSlider(value) {
   const t = clamp(value / 100, 0, 1);
   const leftHeight = cageBounds.bottom - cageBounds.top;
@@ -316,7 +337,7 @@ function renderQuiz() {
     return;
   }
 
-  outputs.quizContainer.innerHTML = QUIZ_QUESTIONS.map((question, index) => `
+  outputs.quizContainer.innerHTML = quizRuntimeQuestions.map((question, index) => `
     <article class="quiz-question" data-question-index="${index}">
       <div class="question-header">
         <div class="question-title">Question ${index + 1}</div>
@@ -324,7 +345,7 @@ function renderQuiz() {
       </div>
       <p>${question.prompt}</p>
       <div class="question-options">
-        ${Object.entries(question.options).map(([key, label]) => `
+        ${question.shuffledOptions.map(({ key, label }) => `
           <label class="question-option">
             <input type="checkbox" name="q${index}" value="${key}">
             <span><strong>${key}.</strong> ${label}</span>
@@ -356,11 +377,13 @@ function evaluateQuestion(question, selectedValues) {
 }
 
 function collectQuizResults() {
-  return QUIZ_QUESTIONS.map((question, index) => {
+  return quizRuntimeQuestions.map((question, index) => {
     const selectedValues = [...document.querySelectorAll(`input[name="q${index}"]:checked`)].map((input) => input.value);
     const score = evaluateQuestion(question, selectedValues);
     return {
       index,
+      prompt: question.prompt,
+      displayedOptions: question.shuffledOptions,
       selectedValues,
       score,
       correctValues: question.correct,
@@ -385,7 +408,7 @@ function renderQuizCorrection(results) {
 
     const feedback = node.querySelector(".question-feedback");
     feedback.hidden = false;
-    feedback.textContent = `Réponses exactes : ${result.correctValues.join(", ")} • Votre score : ${result.score}/2`;
+    feedback.textContent = `Question corrigée • Votre score : ${result.score}/2`;
   });
 }
 
@@ -442,7 +465,7 @@ function handleQuizSubmission() {
   const total10 = total20 / 2;
   const answeredCount = results.filter((result) => result.selectedValues.length > 0).length;
 
-  if (answeredCount !== QUIZ_QUESTIONS.length) {
+  if (answeredCount !== quizRuntimeQuestions.length) {
     outputs.quizStatus.textContent = "Merci de répondre à toutes les questions avant de soumettre la note.";
     outputs.quizStatus.classList.remove("is-success");
     outputs.quizStatus.classList.add("is-error");
@@ -455,7 +478,7 @@ function handleQuizSubmission() {
     outputs.quizResult.hidden = false;
     outputs.quizResult.innerHTML = `
       <strong>Note : ${total20}/20 (${round(total10, 1)}/10)</strong>
-      <p>${answeredCount} question(s) renseignée(s) sur ${QUIZ_QUESTIONS.length}. La correction détaillée apparaît sous chaque question.</p>
+      <p>${answeredCount} question(s) renseignée(s) sur ${quizRuntimeQuestions.length}. Les bonnes réponses détaillées ne sont pas affichées automatiquement.</p>
       <p>Étudiant : ${studentName}${studentGroup ? ` • ${studentGroup}` : ""}</p>
     `;
   }
@@ -470,7 +493,14 @@ function handleQuizSubmission() {
     score20: total20,
     score10: round(total10, 1),
     submittedAt: new Date().toISOString(),
-    answers: results,
+    answers: results.map((result) => ({
+      question_number: result.index + 1,
+      prompt: result.prompt,
+      displayedOptions: result.displayedOptions,
+      selectedValues: result.selectedValues,
+      score: result.score,
+      correctValues: result.correctValues,
+    })),
   });
 }
 
@@ -606,6 +636,7 @@ Object.values(controls).forEach((control) => {
   control.addEventListener("change", render);
 });
 
+buildQuizRuntimeQuestions();
 renderQuiz();
 if (outputs.gradeQuizButton) {
   outputs.gradeQuizButton.addEventListener("click", handleQuizSubmission);
